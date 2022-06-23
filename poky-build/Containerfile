@@ -7,11 +7,12 @@ USER root
 RUN wget --progress=dot:mega https://bootstrap.pypa.io/get-pip.py && \
     python3 get-pip.py && \
     rm get-pip.py && \
-    python3 -m pip install --no-cache-dir kas && \
+    python3 -m pip install --no-cache-dir kas git-acquire && \
     echo 'StrictHostKeyChecking accept-new' >> /etc/ssh/ssh_config && \
     wget --progress=dot:mega \
         https://storage.googleapis.com/git-repo-downloads/repo \
         -O /usr/local/bin/repo && \
-    chmod a+rx /usr/local/bin/repo
+    chmod a+rx /usr/local/bin/repo && \
+    git config --system --add safe.directory '*'
 
 USER usersetup
