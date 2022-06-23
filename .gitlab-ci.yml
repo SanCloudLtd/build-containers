@@ -1,0 +1,53 @@
+# Copyright (C) 2022 SanCloud Ltd
+# SPDX-License-Identifier: Apache-2.0
+
+stages:
+  - check
+  - build
+
+hadolint:
+  stage: check
+  image: hadolint/hadolint:latest-alpine
+  script:
+    - hadolint iot-build/Containerfile
+    - hadolint iot-arm-build/Containerfile
+    - hadolint poky-build/Containerfile
+    - hadolint arago-build/Containerfile
+
+pre-commit:
+  stage: check
+  image: gitlab-registry.sancloud.co.uk/bsp/build-containers/iot-build:latest
+  variables:
+    PRE_COMMIT_HOME: ${CI_PROJECT_DIR}/.cache/pre-commit
+  cache:
+    paths:
+      - ${PRE_COMMIT_HOME}
+  script:
+    - pre-commit run -a
+
+.build-container:
+  image: quay.io/podman/stable
+  stage: build
+  script:
+    - if [[ "${CI_COMMIT_REF_SLUG}" == "main" ]]; then CTR_TAG=latest; else CTR_TAG=${CI_COMMIT_REF_SLUG}; fi
+    - CTR_NAME="${CI_REGISTRY}/${CI_PROJECT_PATH}/${CI_JOB_NAME}:${CTR_TAG}"
+    - echo $CTR_NAME
+    - podman login -u ${CI_REGISTRY_USER} -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
+    - podman build --pull -t "${CTR_NAME}" ${CI_JOB_NAME}
+    - podman push "${CTR_NAME}"
+
+iot-build:
+  extends: .build-container
+
+iot-arm-build:
+  extends: .build-container
+  dependencies:
+    - iot-build
+
+poky-build:
+  extends: .build-container
+
+arago-build:
+  extends: .build-container
+  dependencies:
+    - poky-build
