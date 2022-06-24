@@ -14,13 +14,8 @@ if [[ ! -d "$1" ]]; then
     exit 1
 fi
 
-cd "$1"
-if [[ -e prebuild.sh ]]; then
-    ./prebuild.sh
-fi
-
 if command -v podman &> /dev/null; then
-    podman build -t "ghcr.io/sancloudltd/$1:dev" .
+    podman build --pull -t "$1" "$1"
 else
-    docker build -f Containerfile -t "ghcr.io/sancloudltd/$1:dev" .
+    docker build --pull -f Containerfile -t "$1" "$1"
 fi

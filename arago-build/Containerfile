@@ -1,7 +1,7 @@
 # Copyright (C) 2021 SanCloud Ltd
 # SPDX-License-Identifier: Apache-2.0
 
-FROM ghcr.io/sancloudltd/poky-build:dev
+FROM gitlab-registry.sancloud.co.uk/bsp/build-containers/poky-build:latest
 
 USER root
 RUN wget --progress=dot:mega \
