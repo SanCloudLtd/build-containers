@@ -5,8 +5,6 @@ SPDX-License-Identifier: CC-BY-4.0
 
 # SanCloud Container Images
 
-[![Build images](https://github.com/SanCloudLtd/containers/actions/workflows/build.yml/badge.svg)](https://github.com/SanCloudLtd/containers/actions/workflows/build.yml)
-[![Lint](https://github.com/SanCloudLtd/containers/actions/workflows/lint.yml/badge.svg)](https://github.com/SanCloudLtd/containers/actions/workflows/lint.yml)
 [![pre-commit.ci status](https://results.pre-commit.ci/badge/github/SanCloudLtd/containers/dev.svg)](https://results.pre-commit.ci/latest/github/SanCloudLtd/containers/dev)
 
 This repository contains source files
@@ -18,15 +16,15 @@ in the hope that they are useful to others.
 ## Available images
 
 The container images defined in this repository
-are pushed to the GitHub Container Registry
+are pushed to the [Quay.io](https://quay.io/) Container Registry
 and can be
-[browsed online](https://github.com/orgs/SanCloudLtd/packages?ecosystem=container).
+[browsed online](https://quay.io/organization/sancloudltd).
 They can be used with either [Docker/Moby](https://mobyproject.org/)
 or [Podman](https://podman.io/).
 The example commands below use `docker`
 but substituting for `podman` should give equivalent results.
 
-### iot-dev
+### iot-build
 
 This image is intended to be used
 for native development of IoT solutions.
@@ -35,20 +33,20 @@ with common build tools
 and libraries for MQTT communication.
 
 ```
-docker pull ghcr.io/sancloudltd/iot-dev:dev
+docker pull quay.io/sancloudltd/iot-build
 ```
 
-### iot-crossdev
+### iot-arm-build
 
 This image is intended to be used
 for cross-compilation of IoT solutions
 intended to run on the SanCloud BBE.
-It is based on the `iot-dev` image described above
+It is based on the `iot-build` image described above
 with the addition of the armv7-eabihf glibc toolchain
 from <https://toolchains.bootlin.com/>.
 
 ```
-docker pull ghcr.io/sancloudltd/iot-crossdev:dev
+docker pull quay.io/sancloudltd/iot-arm-build
 ```
 
 ### poky-build
@@ -61,7 +59,7 @@ Ubuntu 20.04 images with the addition of pip
 and with SSH configured to trust new keys on first use (TOFU).
 
 ```
-docker pull ghcr.io/sancloudltd/poky-build:dev
+docker pull quay.io/sancloudltd/poky-build
 ```
 
 ### arago-build
@@ -74,7 +72,7 @@ with the addition of the ARM toolchain
 required by the Arago distro.
 
 ```
-docker pull ghcr.io/sancloudltd/arago-build:dev
+docker pull quay.io/sancloudltd/arago-build
 ```
 
 ## Contributing
@@ -84,7 +82,7 @@ and [issue reports](https://github.com/SanCloudLtd/containers/issues)
 are welcome for this repository.
 
 For further support enquiries
-please contact us via email to <yocto@sancloud.com>.
+please contact us via email to <opensource@sancloud.com>.
 
 ## License
 
