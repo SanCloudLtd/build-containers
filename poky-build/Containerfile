@@ -13,6 +13,8 @@ RUN wget --progress=dot:mega https://bootstrap.pypa.io/get-pip.py && \
         https://storage.googleapis.com/git-repo-downloads/repo \
         -O /usr/local/bin/repo && \
     chmod a+rx /usr/local/bin/repo && \
-    git config --system --add safe.directory '*'
+    git config --system --add safe.directory '*' && \
+    git config --system user.name poky-build && \
+    git config --system user.email nobody@example.com
 
 USER usersetup
