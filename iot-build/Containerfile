@@ -9,7 +9,7 @@ RUN apt-get update && \
         libjson-c-dev device-tree-compiler bison flex wget libssl-dev \
         libgmp3-dev libmpc-dev bc ca-certificates libncurses-dev \
         u-boot-tools git clang-tidy cppcheck rsync zlib1g-dev \
-        ruby python3 python3-pip \
+        ruby python3 python3-pip doxygen graphviz \
         autoconf automake libtool file openssh-client uuid-dev uuid-runtime && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
