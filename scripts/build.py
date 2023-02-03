@@ -23,6 +23,10 @@ IMAGES = [
 ]
 
 
+def msg(m):
+    print(m, flush=True)
+
+
 def select_container_engine():
     podman_cmd = shutil.which("podman")
     if podman_cmd:
@@ -32,7 +36,7 @@ def select_container_engine():
     if docker_cmd:
         return docker_cmd
 
-    print("Failed to find podman or docker! Cannot continue.", file=sys.stderr)
+    msg("Failed to find podman or docker! Cannot continue.", file=sys.stderr)
 
 
 ENGINE_CMD = select_container_engine()
@@ -42,18 +46,14 @@ def run(cmd, **kwargs):
     return subprocess.run(cmd, shell=True, check=True, **kwargs)
 
 
-def capture(cmd, **kwargs):
-    return run(cmd, capture_output=True, **kwargs).stdout.decode("utf-8")
-
-
 def build_image(img):
-    print(f">>> Building {img}")
+    msg(f">>> Building {img}")
     run(f"{ENGINE_CMD} build -t {img} -f Containerfile", cwd=img)
 
 
 def pull_deps(img_list):
     # This is a bit manual for now
-    print(">>> Pulling dependencies")
+    msg(">>> Pulling dependencies")
     if "dev23-base" in img_list:
         run(f"{ENGINE_CMD} pull docker.io/library/ubuntu:22.04")
     if "dev23-yocto" in img_list:
@@ -68,12 +68,12 @@ def build_list(img_list):
 
 
 def tag_img(img, repo, tag):
-    print(f">>> Tagging {img} as {repo}/{img}:{tag}")
+    msg(f">>> Tagging {img} as {repo}/{img}:{tag}")
     run(f"{ENGINE_CMD} tag {img} {repo}/{img}:{tag}")
 
 
 def push_img(img, repo, tag):
-    print(f">>> Pushing {repo}/{img}:{tag}")
+    msg(f">>> Pushing {repo}/{img}:{tag}")
     run(f"{ENGINE_CMD} push {repo}/{img}:{tag}")
 
 
@@ -113,7 +113,7 @@ def parse_args():
         args.images = IMAGES
 
     if not args.images:
-        print("Nothing to do.")
+        msg("Nothing to do.")
         sys.exit(0)
 
     return args
