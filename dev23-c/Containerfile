@@ -1,7 +1,7 @@
 # Copyright (C) 2023 SanCloud Ltd
 # SPDX-License-Identifier: Apache-2.0
 
-FROM dev23-base
+FROM dev23-base:latest
 
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \

@@ -1,7 +1,7 @@
 # Copyright (C) 2021 SanCloud Ltd
 # SPDX-License-Identifier: Apache-2.0
 
-FROM iot-build
+FROM iot-build:latest
 
 ENV TOOLCHAIN_VENDOR=bootlin
 ENV TOOLCHAIN_ARCH=armv7-eabihf
