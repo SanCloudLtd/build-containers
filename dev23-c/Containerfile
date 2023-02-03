@@ -1,0 +1,14 @@
+# Copyright (C) 2023 SanCloud Ltd
+# SPDX-License-Identifier: Apache-2.0
+
+FROM dev23-base
+
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+        cmake ninja-build device-tree-compiler bison flex bc u-boot-tools \
+        autoconf automake libtool libmosquitto-dev libjson-c-dev libssl-dev \
+        libgmp3-dev libmpc-dev libncurses-dev zlib1g-dev libsystemd-dev \
+        modemmanager-dev uuid-dev uuid-runtime clang-tidy cppcheck doxygen \
+        graphviz && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
