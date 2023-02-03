@@ -13,6 +13,9 @@ hadolint:
     - hadolint iot-arm-build/Containerfile
     - hadolint poky-build/Containerfile
     - hadolint arago-build/Containerfile
+    - hadolint dev23-base/Containerfile
+    - hadolint dev23-c/Containerfile
+    - hadolint dev23-yocto/Containerfile
 
 pre-commit:
   stage: check
@@ -25,47 +28,20 @@ pre-commit:
   script:
     - pre-commit run -a
 
-.build-container:
+build-images:
   image: quay.io/podman/stable
   stage: build
+  resource_group: registry  # This ensures only one build runs at a time so that
+                            # local image names are not rebuilt concurrently.
   rules:
     - if: $CI_COMMIT_REF_SLUG == "main"
       variables:
         CTR_TAG: latest
+        EXTRA_REPO_ARGS: -r quay.io/sancloudltd
     - if: $CI_COMMIT_REF_SLUG != "main"
       variables:
         CTR_TAG: $CI_COMMIT_REF_SLUG
   variables:
-    CTR_NAME: "${CI_REGISTRY}/${CI_PROJECT_PATH}/${CI_JOB_NAME}:${CTR_TAG}"
-    QUAY_CTR_NAME: "quay.io/sancloudltd/${CI_JOB_NAME}:latest"
+    DEFAULT_REPO: "${CI_REGISTRY}/${CI_PROJECT_PATH}"
   script:
-    - echo ${CTR_NAME}
-    - podman login -u ${CI_REGISTRY_USER} -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
-    - podman build --pull -t "${CTR_NAME}" ${EXTRA_PODMAN_BUILD_ARGS} ${CI_JOB_NAME}
-    - podman push "${CTR_NAME}"
-    - |
-      if [[ "$CTR_TAG" == latest ]]; then
-        podman tag "${CTR_NAME}" "${QUAY_CTR_NAME}"
-        podman login -u "sancloudltd+bot" -p "${QUAY_BOT_TOKEN}" quay.io
-        podman push "${QUAY_CTR_NAME}"
-      fi
-
-iot-build:
-  extends: .build-container
-
-iot-arm-build:
-  extends: .build-container
-  variables:
-    EXTRA_PODMAN_BUILD_ARGS: --from "${CI_REGISTRY}/${CI_PROJECT_PATH}/iot-build:${CTR_TAG}"
-  dependencies:
-    - iot-build
-
-poky-build:
-  extends: .build-container
-
-arago-build:
-  extends: .build-container
-  variables:
-    EXTRA_PODMAN_BUILD_ARGS: --from "${CI_REGISTRY}/${CI_PROJECT_PATH}/poky-build:${CTR_TAG}"
-  dependencies:
-    - poky-build
+    - ./scripts/build.py -a -d -r ${DEFAULT_REPO} ${EXTRA_REPO_ARGS} -t ${CTR_TAG}
