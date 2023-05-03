@@ -48,7 +48,7 @@ def run(cmd, **kwargs):
 
 def build_image(img):
     msg(f">>> Building {img}")
-    run(f"{ENGINE_CMD} build -t {img} -f Containerfile", cwd=img)
+    run(f"{ENGINE_CMD} build -t {img} -f Containerfile .", cwd=img)
 
 
 def pull_deps(img_list):
