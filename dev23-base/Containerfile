@@ -9,5 +9,5 @@ RUN apt-get update && \
         git rsync python3 python3-pip ruby && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/* && \
-    python3 -m pip install --no-cache-dir pre-commit && \
+    python3 -m pip install --no-cache-dir --upgrade pre-commit identify && \
     git config --system --add safe.directory '*'

@@ -20,12 +20,6 @@ hadolint:
 pre-commit:
   stage: check
   image: gitlab-registry.sancloud.co.uk/bsp/build-containers/dev23-base:latest
-  cache:
-    paths:
-      - ${CI_PROJECT_DIR}/.cache/pre-commit
-  before_script:
-    - mkdir -p ${CI_PROJECT_DIR}/.cache/pre-commit ~/.cache
-    - ln -sfn ${CI_PROJECT_DIR}/.cache/pre-commit ~/.cache/pre-commit
   script:
     - pre-commit run -a
 
