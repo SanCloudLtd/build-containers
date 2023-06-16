@@ -24,7 +24,47 @@ or [Podman](https://podman.io/).
 The example commands below use `docker`
 but substituting for `podman` should give equivalent results.
 
-### iot-build
+### Current images
+
+The current set of images are based on Ubuntu 22.04 LTS.
+
+#### dev23-base
+
+This image is intended to be used
+as a common base for current build containers.
+It can also be used to execute tasks
+which don't require a full toolchain
+(e.g. [pre-commit](https://pre-commit.com/) checks).
+
+```
+docker pull quay.io/sancloudltd/dev23-base
+```
+
+#### dev23-c
+
+This image is intended to be used
+to build C/C++ projects
+developed by SanCloud.
+It is based on the dev23-base image.
+
+```
+docker pull quay.io/sancloudltd/dev23-c
+```
+
+#### dev23-yocto
+
+This image is intended to be used
+to build Yocto Project images.
+It is based on the [crops](https://github.com/crops) image
+`docker.io/crops/poky:ubuntu-22.04`.
+
+```
+docker pull quay.io/sancloudltd/dev23-yocto
+```
+
+### Old images
+
+#### iot-build
 
 This image is intended to be used
 for native development of IoT solutions.
@@ -36,7 +76,7 @@ and libraries for MQTT communication.
 docker pull quay.io/sancloudltd/iot-build
 ```
 
-### iot-arm-build
+#### iot-arm-build
 
 This image is intended to be used
 for cross-compilation of IoT solutions
@@ -49,7 +89,7 @@ from <https://toolchains.bootlin.com/>.
 docker pull quay.io/sancloudltd/iot-arm-build
 ```
 
-### poky-build
+#### poky-build
 
 This image is intended to be used
 to build Poky distro images using Yocto Project
@@ -62,7 +102,7 @@ and with SSH configured to trust new keys on first use (TOFU).
 docker pull quay.io/sancloudltd/poky-build
 ```
 
-### arago-build
+#### arago-build
 
 This image is intended to be used
 to build Arago distro images using Yocto Project
