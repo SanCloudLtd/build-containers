@@ -28,10 +28,9 @@ stages:
                             # local image names are not rebuilt concurrently.
   rules:
     - if: $CI_COMMIT_TAG
-      variables:
-        EXTRA_REPO_ARGS: -r quay.io/sancloudltd
   variables:
     DEFAULT_REPO: "${CI_REGISTRY}/${CI_PROJECT_PATH}"
+    EXTRA_REPO_ARGS: quay.io/sancloudltd
 
 .deploy-internal:
   extends: .deploy
