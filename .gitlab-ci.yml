@@ -32,8 +32,15 @@ stages:
         EXTRA_REPO_ARGS: -r quay.io/sancloudltd
   variables:
     DEFAULT_REPO: "${CI_REGISTRY}/${CI_PROJECT_PATH}"
+
+.deploy-internal:
+  extends: .deploy
   before_script:
     - podman login -u ${CI_REGISTRY_USER} -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
+
+.deploy-external:
+  extends: .deploy
+  before_script:
     - podman login -u "sancloudltd+bot" -p "${QUAY_BOT_TOKEN}" quay.io
 
 
@@ -63,7 +70,7 @@ build-images:
     - ./scripts/build.py -a -r ${DEFAULT_REPO} -t ${CI_COMMIT_REF_SLUG}
 
 deploy-base-images-internal:
-  extends: .deploy
+  extends: .deploy-internal
   needs:
     - build-base-images
   script:
@@ -72,13 +79,13 @@ deploy-base-images-internal:
 deploy-images-internal:
   needs:
     - build-images
-  extends: .deploy
+  extends: .deploy-internal
   script:
     - ./scripts/build.py -a -d -r ${DEFAULT_REPO} -t ${CI_COMMIT_REF_SLUG} -D ./base
 
 
 deploy-base-images-external:
-  extends: .deploy
+  extends: .deploy-external
   needs:
     - build-base-images
   script:
@@ -87,6 +94,6 @@ deploy-base-images-external:
 deploy-images-external:
   needs:
     - build-images
-  extends: .deploy
+  extends: .deploy-external
   script:
     - ./scripts/build.py -a -d -r ${EXTRA_REPO_ARGS} -t latest -D ./base
