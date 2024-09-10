@@ -6,25 +6,33 @@ import argparse
 import shutil
 import subprocess
 import sys
+import os
 
 # We don't want to implement a dependency resolver for something as simple as
 # this, so the list of images here has just been manually sorted into an order
 # which ensures base images come before dependent images. If we're given
 # multiple images to build, we build them in the order in which they appear in
 # this list.
-IMAGES = [
-    "dev23-base",
-    "dev23-c",
-    "dev23-yocto",
-    "iot-build",
-    "iot-arm-build",
-    "poky-build",
-    "arago-build",
+
+FOLDER_IGNORE_ARRAY = [
+    ".git",
+    "scripts",
+    ".vscode",
+    "LICENSES",
+    ".devcontainer",
+    "base"
 ]
 
+def get_images():
+    images = []
+    for name in os.listdir("."):
+        if os.path.isdir(name) and name not in FOLDER_IGNORE_ARRAY:
+            images.append(name)
+    return images
 
-def msg(m):
-    print(m, flush=True)
+def msg(m, **kwargs):
+    print(m, flush=True, **kwargs)
+
 
 
 def select_container_engine():
@@ -37,14 +45,18 @@ def select_container_engine():
         return docker_cmd
 
     msg("Failed to find podman or docker! Cannot continue.", file=sys.stderr)
+    sys.exit(1)
 
 
 ENGINE_CMD = select_container_engine()
 
 
 def run(cmd, **kwargs):
-    return subprocess.run(cmd, shell=True, check=True, **kwargs)
-
+    try:
+        return subprocess.run(cmd, shell=True, check=True, **kwargs)
+    except Exception as e:
+        msg(e)
+        sys.exit(1)
 
 def build_image(img):
     msg(f">>> Building {img}")
@@ -62,9 +74,8 @@ def pull_deps(img_list):
 
 def build_list(img_list):
     # Build in dependency order, not in the order in which the images are given
-    for img in IMAGES:
-        if img in img_list:
-            build_image(img)
+    for img in img_list:
+        build_image(img)
 
 
 def tag_img(img, repo, tag):
@@ -103,11 +114,19 @@ def parse_args():
         help="Deploy images to the selected repositories",
     )
     parser.add_argument("-a", "--all", action="store_true", help="Build all images")
+    parser.add_argument("-D", "--directory", default="./", help="Directory to search for containers")
     parser.add_argument("images", nargs="*", help="List of images to build")
 
     args = parser.parse_args()
     if not args.repositories:
-        args.repositories = ["quay.io/sancloudltd"]
+        msg("No Repository defined")
+
+    if args.directory:
+        os.chdir(args.directory)
+
+    print(args.directory)
+
+    IMAGES = get_images()
 
     if args.all:
         args.images = IMAGES
@@ -123,8 +142,10 @@ def main():
     args = parse_args()
     build_list(args.images)
     if args.deploy:
-        deploy_list(args.images, args.repositories, args.tag)
-
+        if str(args.repositories) != "None":
+            deploy_list(args.images, args.repositories, args.tag)
+        else:
+            msg("No repository defined")
 
 if __name__ == "__main__":
     main()

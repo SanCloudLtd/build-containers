@@ -4,45 +4,89 @@
 stages:
   - check
   - build
+  - deploy
 
-hadolint:
+.check:
   stage: check
-  image: hadolint/hadolint:latest-alpine
-  script:
-    - hadolint iot-build/Containerfile
-    - hadolint iot-arm-build/Containerfile
-    - hadolint poky-build/Containerfile
-    - hadolint arago-build/Containerfile
-    - hadolint dev23-base/Containerfile
-    - hadolint dev23-c/Containerfile
-    - hadolint dev23-yocto/Containerfile
+  rules:
+    - if: $CI_COMMIT_TAG
+      when: never
+    - when: always
 
-pre-commit:
-  stage: check
-  image: gitlab-registry.sancloud.co.uk/bsp/build-containers/dev23-base:latest
-  script:
-    - pre-commit run -a
-
-build-images:
+.build:
   image: quay.io/podman/stable
   stage: build
   resource_group: registry  # This ensures only one build runs at a time so that
                             # local image names are not rebuilt concurrently.
+  variables:
+    DEFAULT_REPO: "${CI_REGISTRY}/${CI_PROJECT_PATH}"
+
+.deploy:
+  image: quay.io/podman/stable
+  stage: deploy
+  resource_group: registry  # This ensures only one build runs at a time so that
+                            # local image names are not rebuilt concurrently.
   rules:
-    - if: $CI_COMMIT_REF_SLUG == "main"
+    - if: $CI_COMMIT_TAG
       variables:
-        CTR_TAG: latest
         EXTRA_REPO_ARGS: -r quay.io/sancloudltd
-    - if: $CI_COMMIT_REF_SLUG != "main"
-      variables:
-        CTR_TAG: $CI_COMMIT_REF_SLUG
   variables:
     DEFAULT_REPO: "${CI_REGISTRY}/${CI_PROJECT_PATH}"
   before_script:
     - podman login -u ${CI_REGISTRY_USER} -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
-    - |
-      if [[ "$CTR_TAG" == latest ]]; then
-        podman login -u "sancloudltd+bot" -p "${QUAY_BOT_TOKEN}" quay.io
-      fi
+    - podman login -u "sancloudltd+bot" -p "${QUAY_BOT_TOKEN}" quay.io
+
+
+hadolint:
+  extends: .check
+  image: hadolint/hadolint:latest-alpine
   script:
-    - ./scripts/build.py -a -d -r ${DEFAULT_REPO} ${EXTRA_REPO_ARGS} -t ${CTR_TAG}
+    - hadolint ./**/Containerfile
+    - hadolint ./base/**/Containerfile
+
+pre-commit:
+  extends: .check
+  image: gitlab-registry.sancloud.co.uk/tools/containers/pre-commit:${PRECOMMIT_VER}
+  script:
+    - pre-commit run -a
+
+build-base-images:
+  extends: .build
+  script:
+    - ./scripts/build.py -a -r ${DEFAULT_REPO} -t ${CI_COMMIT_REF_SLUG} -D base
+
+build-images:
+  extends: .build
+  needs:
+    - build-base-images
+  script:
+    - ./scripts/build.py -a -r ${DEFAULT_REPO} -t ${CI_COMMIT_REF_SLUG}
+
+deploy-base-images-internal:
+  extends: .deploy
+  needs:
+    - build-base-images
+  script:
+    - ./scripts/build.py -a -d -r ${DEFAULT_REPO} -t ${CI_COMMIT_REF_SLUG}
+
+deploy-images-internal:
+  needs:
+    - build-images
+  extends: .deploy
+  script:
+    - ./scripts/build.py -a -d -r ${DEFAULT_REPO} -t ${CI_COMMIT_REF_SLUG} -D ./base
+
+
+deploy-base-images-external:
+  extends: .deploy
+  needs:
+    - build-base-images
+  script:
+    - ./scripts/build.py -a -d -r ${EXTRA_REPO_ARGS} -t latest
+
+deploy-images-external:
+  needs:
+    - build-images
+  extends: .deploy
+  script:
+    - ./scripts/build.py -a -d -r ${EXTRA_REPO_ARGS} -t latest -D ./base
