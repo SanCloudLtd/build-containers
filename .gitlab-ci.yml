@@ -42,8 +42,7 @@ stages:
   tags:
     - container-test
   before_script:
-    - docker login -u "sancloudltd+bot" -p "${QUAY_BOT_TOKEN}" quay.io
-
+    - echo "${QUAY_BOT_TOKEN}" | docker login quay.io --username='sancloudltd+bot' --password-stdin
 
 hadolint:
   extends: .check
@@ -88,11 +87,11 @@ deploy-images-internal:
 deploy-base-images-external:
   extends: .deploy-external
   script:
-    - ./scripts/build.py -a -d -r ${EXTRA_REPO_ARGS} -t latest
+    - ./scripts/build.py -a -d -r ${EXTRA_REPO_ARGS} -t latest -D ./base
 
 deploy-images-external:
   needs:
     - deploy-base-images-external
   extends: .deploy-external
   script:
-    - ./scripts/build.py -a -d -r ${EXTRA_REPO_ARGS} -t latest -D ./base
+    - ./scripts/build.py -a -d -r ${EXTRA_REPO_ARGS} -t latest
