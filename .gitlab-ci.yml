@@ -22,7 +22,6 @@ stages:
     DEFAULT_REPO: "${CI_REGISTRY}/${CI_PROJECT_PATH}"
 
 .deploy:
-  image: quay.io/podman/stable
   stage: deploy
   resource_group: registry  # This ensures only one build runs at a time so that
                             # local image names are not rebuilt concurrently.
@@ -34,13 +33,16 @@ stages:
 
 .deploy-internal:
   extends: .deploy
+  image: quay.io/podman/stable
   before_script:
     - podman login -u ${CI_REGISTRY_USER} -p ${CI_JOB_TOKEN} ${CI_REGISTRY}
 
 .deploy-external:
   extends: .deploy
+  tags:
+    - container-test
   before_script:
-    - podman login -u "sancloudltd+bot" -p "${QUAY_BOT_TOKEN}" quay.io
+    - docker login -u "sancloudltd+bot" -p "${QUAY_BOT_TOKEN}" quay.io
 
 
 hadolint:
@@ -85,14 +87,12 @@ deploy-images-internal:
 
 deploy-base-images-external:
   extends: .deploy-external
-  needs:
-    - build-base-images
   script:
     - ./scripts/build.py -a -d -r ${EXTRA_REPO_ARGS} -t latest
 
 deploy-images-external:
   needs:
-    - build-images
+    - deploy-base-images-external
   extends: .deploy-external
   script:
     - ./scripts/build.py -a -d -r ${EXTRA_REPO_ARGS} -t latest -D ./base
