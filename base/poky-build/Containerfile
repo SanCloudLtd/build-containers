@@ -4,7 +4,7 @@
 FROM docker.io/crops/poky:ubuntu-20.04
 
 USER root
-RUN wget --progress=dot:mega https://bootstrap.pypa.io/get-pip.py && \
+RUN wget --progress=dot:mega https://bootstrap.pypa.io/pip/3.8/get-pip.py && \
     python3 get-pip.py && \
     rm get-pip.py && \
     python3 -m pip install --no-cache-dir kas git-acquire && \
